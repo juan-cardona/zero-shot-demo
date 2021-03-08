@@ -2,10 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.nlp import NLP
+from app.scrapytwit import extract_tweets
+
 
 class Message(BaseModel):
     input: str
     output: str = None
+
 
 app = FastAPI()
 nlp = NLP()
@@ -24,12 +27,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/generative/")
-async def  generate(message: Message):
-    message.output  = nlp.generate(prompt=message.input)
-    return {"output" : message.output}
 
-@app.post("/sentiment/")
-async def sentiment_analysis(message: Message):
-    message.output  = str(nlp.sentiments(message.input))
-    return {"output" : message.output}
+@app.post("/zero_shot/")
+def zeroShot(message: Message):
+    topic = message.input
+    message.input = extract_tweets(topic=topic)
+    print('i got here')
+    message.output = str(nlp.zero_shot(message.input))
+    return {"output": message.output}
+
+
+@app.post("/get_tweets/")
+def extractTweets(message: Message):
+    message.output = str(extract_tweets(topic=message.input))
+    return {"output": message.output}
