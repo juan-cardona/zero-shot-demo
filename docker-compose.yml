@@ -3,6 +3,13 @@ services:
   chatsume:
     build: .
     container_name: "chsme"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu, utility]
     ports:
       - "8000:8080"
     volumes:
